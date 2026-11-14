@@ -10,10 +10,12 @@ import {
   updateUserStatusSchema,
 } from '../validators/index.js';
 import * as adminController from '../controllers/admin.controller.js';
+import { adminLeadRouter } from './lead.routes.js';
 
 const router = Router();
 
-router.use(auth, authorize(ROLES.ADMIN));
+router.use(auth);
+router.use('/users', authorize(ROLES.ADMIN));
 
 router.get(
   '/users',
@@ -35,5 +37,7 @@ router.patch(
   validate({ params: userIdParamSchema, body: updateUserStatusSchema }),
   adminController.updateUserStatus
 );
+
+router.use('/leads', authorize(ROLES.ADMIN, ROLES.ADVISOR), adminLeadRouter);
 
 export default router;

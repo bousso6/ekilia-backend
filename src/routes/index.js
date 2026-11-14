@@ -1,6 +1,8 @@
 import { Router } from 'express';
 import authRoutes from './auth.routes.js';
 import adminRoutes from './admin.routes.js';
+import leadRoutes from './lead.routes.js';
+import projectRoutes from './project.routes.js';
 
 const router = Router();
 
@@ -13,13 +15,11 @@ router.get('/health', (req, res) => {
 });
 
 // Partie A
-// import leadRoutes from './lead.routes.js';
-// import projectRoutes from './project.routes.js';
 // import dashboardRoutes from './dashboard.routes.js';
 router.use('/auth', authRoutes);
 router.use('/admin', adminRoutes);
-// router.use('/leads', leadRoutes);
-// router.use('/projects', projectRoutes);
+router.use(leadRoutes);
+router.use('/projects', projectRoutes);
 // router.use('/dashboard', dashboardRoutes);
 
 // Partie B

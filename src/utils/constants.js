@@ -38,6 +38,50 @@ export const LEAD_STATUS = [
   'perdu',
 ];
 
+export const LEAD_HORIZONS = [
+  'immediat',
+  '0_3_mois',
+  '3_6_mois',
+  '6_12_mois',
+  'plus_12_mois',
+];
+
+export const LEAD_PROGRESS = [
+  'idee',
+  'preparation',
+  'demarches_engagees',
+  'prestataires_identifies',
+  'execution_en_cours',
+];
+
+export const LEAD_NEEDS = [
+  'conseil',
+  'mise_en_relation',
+  'execution',
+  'suivi',
+  'audit',
+  'autre',
+];
+
+export const LEAD_OBSTACLES = [
+  'distance',
+  'confiance',
+  'administratif',
+  'budget',
+  'temps',
+  'prestataires',
+  'information',
+];
+
+export const LEAD_SOURCES = [
+  'site',
+  'diagnostic',
+  'recommandation',
+  'partenaire',
+  'evenement',
+  'autre',
+];
+
 export const TASK_STATUS = [
   'a_faire',
   'en_cours',
