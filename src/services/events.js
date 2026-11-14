@@ -11,7 +11,11 @@ const callHook = async (specifier, name, payload) => {
   const hook = service?.[name] || service?.default?.[name];
 
   if (typeof hook === 'function') {
-    await hook(payload);
+    try {
+      await hook(payload);
+    } catch {
+      return;
+    }
   }
 };
 

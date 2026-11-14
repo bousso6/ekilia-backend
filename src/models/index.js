@@ -4,8 +4,8 @@ export { Project } from './Project.js';
 // Partie A
 export { Lead } from './Lead.js';
 export { DiagnosticForm } from './DiagnosticForm.js';
-// export { ProjectTemplate } from './ProjectTemplate.js';
-// export { Task } from './Task.js';
+export { ProjectTemplate } from './ProjectTemplate.js';
+export { Task } from './Task.js';
 
 // Partie B
 // export { Budget } from './Budget.js';
