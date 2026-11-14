@@ -8,8 +8,8 @@ export { Project } from './Project.js';
 // export { Task } from './Task.js';
 
 // Partie B
-// export { Budget } from './Budget.js';
-// export { Expense } from './Expense.js';
+export { Budget } from './Budget.js';
+export { Expense } from './Expense.js';
 // export { Document } from './Document.js';
 export { Partner } from './Partner.js';
 export { PartnerAssignment } from './PartnerAssignment.js';

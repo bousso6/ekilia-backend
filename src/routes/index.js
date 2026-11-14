@@ -3,6 +3,7 @@ import { Router } from 'express';
 // Partie B
 import partnerRoutes from './partner.routes.js';
 import assignmentRoutes from './assignment.routes.js';
+import budgetRoutes from './budget.routes.js';
 // import notificationRoutes from './notification.routes.js';
 
 const router = Router();
@@ -32,6 +33,7 @@ router.get('/health', (req, res) => {
 // de project.routes.js quand la partie A l'aura poussé.
 router.use('/admin/partners', partnerRoutes);
 router.use('/projects/:projectId/partners', assignmentRoutes);
+router.use('/projects/:projectId', budgetRoutes);
 // router.use('/notifications', notificationRoutes);
 
 export default router;
