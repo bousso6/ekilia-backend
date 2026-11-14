@@ -9,10 +9,37 @@ import { errorHandler } from './middlewares/errorHandler.js';
 
 const app = express();
 
+const allowedOrigins = env.CLIENT_URL.split(',')
+  .map((origin) => origin.trim())
+  .filter(Boolean);
+
+const isPrivateNetworkHost = (hostname) =>
+  hostname === 'localhost' ||
+  hostname === '127.0.0.1' ||
+  /^10\.\d{1,3}\.\d{1,3}\.\d{1,3}$/.test(hostname) ||
+  /^192\.168\.\d{1,3}\.\d{1,3}$/.test(hostname) ||
+  /^172\.(1[6-9]|2\d|3[01])\.\d{1,3}\.\d{1,3}$/.test(hostname);
+
+const corsOrigin = (origin, callback) => {
+  if (!origin) return callback(null, true);
+  if (allowedOrigins.includes(origin)) return callback(null, true);
+
+  if (env.NODE_ENV !== 'production') {
+    try {
+      const { hostname } = new URL(origin);
+      if (isPrivateNetworkHost(hostname)) return callback(null, true);
+    } catch {
+      // Origine invalide : on la refuse silencieusement.
+    }
+  }
+
+  return callback(null, false);
+};
+
 app.use(helmet());
 app.use(
   cors({
-    origin: env.CLIENT_URL.split(','),
+    origin: corsOrigin,
     credentials: true,
   })
 );

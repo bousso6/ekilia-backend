@@ -8,6 +8,7 @@ const envSchema = z.object({
   PORT: z.coerce.number().default(5000),
 
   MONGODB_URI: z.string().min(1, 'MONGODB_URI est requis'),
+  DNS_SERVERS: z.string().optional(),
   CLIENT_URL: z.string().default('http://localhost:5173'),
 
   JWT_ACCESS_SECRET: z.string().min(16, 'JWT_ACCESS_SECRET trop court'),
@@ -19,6 +20,7 @@ const envSchema = z.object({
   SMTP_PORT: z.coerce.number().default(587),
   SMTP_USER: z.string().optional(),
   SMTP_PASS: z.string().optional(),
+  BREVO_API_KEY: z.string().optional(),
   MAIL_FROM: z.string().default('Elikia <no-reply@elikia.com>'),
 });
 

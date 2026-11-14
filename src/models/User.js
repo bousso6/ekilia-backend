@@ -30,8 +30,11 @@ const userSchema = new mongoose.Schema(
     },
 
     isActive: { type: Boolean, default: true },
+    isEmailVerified: { type: Boolean, default: false },
     lastLoginAt: Date,
 
+    emailVerificationTokenHash: { type: String, select: false },
+    emailVerificationExpires: { type: Date, select: false },
     refreshTokenHash: { type: String, select: false },
     passwordResetTokenHash: { type: String, select: false },
     passwordResetExpires: { type: Date, select: false },
@@ -58,6 +61,8 @@ userSchema.set('toJSON', {
   transform: (doc, ret) => {
     delete ret.password;
     delete ret.refreshTokenHash;
+    delete ret.emailVerificationTokenHash;
+    delete ret.emailVerificationExpires;
     delete ret.passwordResetTokenHash;
     delete ret.passwordResetExpires;
     delete ret.__v;
