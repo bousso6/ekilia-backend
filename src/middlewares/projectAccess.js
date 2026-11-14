@@ -1,30 +1,50 @@
+import mongoose from 'mongoose';
 import { Project } from '../models/Project.js';
-import { ROLES } from '../utils/constants.js';
 import { ApiError } from '../utils/ApiError.js';
 import { asyncHandler } from '../utils/asyncHandler.js';
+import { ROLES } from '../utils/constants.js';
+
+const projectNotFound = () => ApiError.notFound('Projet introuvable');
+
+const isSameUser = (reference, userId) =>
+  Boolean(reference) && reference.toString() === userId.toString();
 
 export const projectAccess = asyncHandler(async (req, res, next) => {
   if (!req.user) {
     throw ApiError.unauthorized();
   }
 
-  const projectId = req.params.projectId || req.params.id;
-  if (!projectId) {
-    throw ApiError.badRequest('Identifiant de projet manquant');
+  const { projectId } = req.params;
+
+  if (!projectId || !mongoose.isValidObjectId(projectId)) {
+    throw projectNotFound();
   }
 
   const project = await Project.findById(projectId);
   if (!project) {
-    throw ApiError.notFound('Projet introuvable');
+    throw projectNotFound();
   }
 
-  const isAdmin = req.user.role === ROLES.ADMIN;
-  const isFinance = req.user.role === ROLES.FINANCE;
-  const isOwner = project.client && project.client.equals(req.user._id);
-  const isAdvisor = project.advisor && project.advisor.equals(req.user._id);
+  const userId = req.user._id;
+  let allowed = false;
 
-  if (!isAdmin && !isFinance && !isOwner && !isAdvisor) {
-    throw ApiError.forbidden('Accès à ce projet refusé');
+  switch (req.user.role) {
+    case ROLES.ADMIN:
+    case ROLES.FINANCE:
+      allowed = true;
+      break;
+    case ROLES.ADVISOR:
+      allowed = isSameUser(project.advisor, userId);
+      break;
+    case ROLES.CLIENT:
+      allowed = isSameUser(project.client, userId);
+      break;
+    default:
+      allowed = false;
+  }
+
+  if (!allowed) {
+    throw projectNotFound();
   }
 
   req.project = project;
