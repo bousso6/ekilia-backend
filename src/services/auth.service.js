@@ -336,18 +336,22 @@ export const changePassword = async (userId, currentPassword, newPassword) => {
   return user.toJSON();
 };
 
-export const requestPasswordReset = async (email) => {
-  const user = await User.findOne({ email });
-  if (!user) {
-    return;
-  }
-
+export const sendPasswordResetLink = async (user) => {
   const token = crypto.randomBytes(32).toString('hex');
   user.passwordResetTokenHash = hashToken(token);
   user.passwordResetExpires = new Date(Date.now() + RESET_TOKEN_TTL_MS);
   await user.save();
 
   await sendPasswordResetEmail(user, token);
+};
+
+export const requestPasswordReset = async (email) => {
+  const user = await User.findOne({ email });
+  if (!user) {
+    return;
+  }
+
+  await sendPasswordResetLink(user);
 };
 
 export const resetPassword = async (token, newPassword) => {

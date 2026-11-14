@@ -2,8 +2,8 @@ export { User } from './User.js';
 export { Project } from './Project.js';
 
 // Partie A
-// export { Lead } from './Lead.js';
-// export { DiagnosticForm } from './DiagnosticForm.js';
+export { Lead } from './Lead.js';
+export { DiagnosticForm } from './DiagnosticForm.js';
 // export { ProjectTemplate } from './ProjectTemplate.js';
 // export { Task } from './Task.js';
 
