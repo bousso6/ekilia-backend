@@ -9,7 +9,7 @@ const envSchema = z.object({
 
   MONGODB_URI: z.string().min(1, 'MONGODB_URI est requis'),
   DNS_SERVERS: z.string().optional(),
-  CLIENT_URL: z.string().default('http://localhost:5173'),
+  CLIENT_URL: z.string().default('http://localhost:3000'),
 
   JWT_ACCESS_SECRET: z.string().min(16, 'JWT_ACCESS_SECRET trop court'),
   JWT_REFRESH_SECRET: z.string().min(16, 'JWT_REFRESH_SECRET trop court'),
