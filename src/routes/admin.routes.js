@@ -10,11 +10,19 @@ import {
   updateUserStatusSchema,
 } from '../validators/index.js';
 import * as adminController from '../controllers/admin.controller.js';
+import * as dashboardController from '../controllers/dashboard.controller.js';
 import { adminLeadRouter } from './lead.routes.js';
 
 const router = Router();
 
 router.use(auth);
+
+router.get(
+  '/dashboard',
+  authorize(ROLES.ADMIN),
+  dashboardController.getAdminDashboard
+);
+
 router.use('/users', authorize(ROLES.ADMIN));
 
 router.get(
