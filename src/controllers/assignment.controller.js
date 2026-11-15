@@ -1,8 +1,13 @@
-import { Partner, PartnerAssignment, Project } from '../models/index.js';
+import { Partner, PartnerAssignment } from '../models/index.js';
 import { ApiError } from '../utils/ApiError.js';
 import { asyncHandler } from '../utils/asyncHandler.js';
 import { ROLES } from '../utils/constants.js';
-import { requireRole, requireUser, userIdOf } from '../utils/guards.js';
+import {
+  loadAccessibleProject,
+  requireRole,
+  requireUser,
+  userIdOf,
+} from '../utils/guards.js';
 import {
   serializeAssignment,
   serializeAssignments,
@@ -17,17 +22,12 @@ const snapshot = (a) => ({
   contactRevealed: a.contactRevealed,
 });
 
-const ensureProject = async (projectId) => {
-  const exists = await Project.exists({ _id: projectId });
-  if (!exists) throw ApiError.notFound('Projet introuvable');
-};
-
 // GET /projects/:projectId/partners
 export const listAssignments = asyncHandler(async (req, res) => {
   const user = requireUser(req);
   const { projectId } = req.params;
 
-  await ensureProject(projectId);
+  await loadAccessibleProject(user, projectId);
 
   const assignments = await PartnerAssignment.find({ project: projectId })
     .sort({ createdAt: 1 })
@@ -45,7 +45,7 @@ export const createAssignment = asyncHandler(async (req, res) => {
   const { projectId } = req.params;
   const { partner: partnerId, role, status } = req.body;
 
-  await ensureProject(projectId);
+  await loadAccessibleProject(user, projectId);
 
   const partner = await Partner.findById(partnerId);
   if (!partner) throw ApiError.notFound('Partenaire introuvable');
@@ -91,6 +91,8 @@ export const updateAssignment = asyncHandler(async (req, res) => {
   const user = requireRole(req, ASSIGNERS);
   const { projectId, assignmentId } = req.params;
   const { status, role, contactRevealed } = req.body;
+
+  await loadAccessibleProject(user, projectId);
 
   const assignment = await PartnerAssignment.findOne({
     _id: assignmentId,
