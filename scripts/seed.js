@@ -50,7 +50,15 @@ const log = (message) => console.log(message);
 const upsertUser = async (data) => {
   const existing = await User.findOne({ email: data.email });
   if (existing) {
-    log(`  = ${data.email} existe déjà (${data.role})`);
+    if (!existing.isEmailVerified) {
+      await User.updateOne(
+        { _id: existing._id },
+        { $set: { isEmailVerified: true } }
+      );
+      log(`  ~ ${data.email} marqué comme vérifié`);
+    } else {
+      log(`  = ${data.email} existe déjà (${data.role})`);
+    }
     return existing;
   }
 
@@ -58,6 +66,7 @@ const upsertUser = async (data) => {
     ...data,
     password: SEED_PASSWORD,
     consent: { accepted: true, acceptedAt: new Date() },
+    isEmailVerified: true,
   });
   await user.save(); // save() déclenche le hachage du mot de passe
   log(`  + ${data.email} créé (${data.role})`);
