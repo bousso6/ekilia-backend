@@ -45,6 +45,18 @@ describe('Authentification (HTTP)', () => {
       expect(user.password).not.toBe('Motdepasse@2026');
     });
 
+    test('exige le consentement', async () => {
+      const response = await agent().post('/api/v1/auth/register').send({
+        firstName: 'Sans',
+        lastName: 'Consentement',
+        email: `noconsent-${Date.now()}@elikia.test`,
+        password: 'Motdepasse@2026',
+      });
+
+      expect(response.status).toBe(400);
+      expect(response.body.success).toBe(false);
+    });
+
     test('refuse un mot de passe de moins de 8 caractères', async () => {
       const response = await agent().post('/api/v1/auth/register').send({
         firstName: 'Mot',

@@ -157,6 +157,10 @@ export const registerUser = async ({
   cityOfResidence,
   consent,
 }) => {
+  if (consent !== true) {
+    throw ApiError.badRequest('Le consentement est obligatoire');
+  }
+
   const existing = await User.findOne({ email });
   if (existing) {
     throw ApiError.conflict('Un compte existe déjà avec cet email');

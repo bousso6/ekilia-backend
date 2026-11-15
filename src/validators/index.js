@@ -20,7 +20,9 @@ export const registerSchema = z.object({
   phone: z.string().trim().min(6).max(30).optional(),
   countryOfResidence: z.string().trim().max(80).optional(),
   cityOfResidence: z.string().trim().max(80).optional(),
-  consent: z.boolean().optional(),
+  consent: z.literal(true, {
+    errorMap: () => ({ message: 'Le consentement est obligatoire' }),
+  }),
 });
 
 export const loginSchema = z.object({
