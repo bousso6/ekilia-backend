@@ -7,6 +7,7 @@ import budgetRoutes from './budget.routes.js';
 import documentRoutes from './document.routes.js';
 import notificationRoutes from './notification.routes.js';
 import activityRoutes from './activity.routes.js';
+import reportRoutes from './report.routes.js';
 
 const router = Router();
 
@@ -34,6 +35,7 @@ router.get('/health', (req, res) => {
 // Montage provisoire : à déplacer dans le bloc « Routeurs de la partie B »
 // de project.routes.js quand la partie A l'aura poussé.
 router.use('/admin/partners', partnerRoutes);
+router.use('/admin/reports', reportRoutes);
 router.use('/projects/:projectId/partners', assignmentRoutes);
 router.use('/projects/:projectId/documents', documentRoutes);
 router.use('/projects/:projectId/activity', activityRoutes);

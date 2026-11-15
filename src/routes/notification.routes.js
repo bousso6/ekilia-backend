@@ -7,13 +7,13 @@ import {
 import { validate } from '../middlewares/validate.js';
 import {
   listPaginationQuerySchema,
-  notificationIdParamSchema,
+  notificationIdParamsSchema,
 } from '../validators/notification.validator.js';
 
 const router = Router();
 
-router.get('/', validate(listPaginationQuerySchema), getMyNotifications);
+router.get('/', validate({ query: listPaginationQuerySchema }), getMyNotifications);
 router.patch('/read-all', markAllNotificationsAsRead);
-router.patch('/:id/read', validate(notificationIdParamSchema), markNotificationAsRead);
+router.patch('/:id/read', validate({ params: notificationIdParamsSchema }), markNotificationAsRead);
 
 export default router;

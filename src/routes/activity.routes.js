@@ -3,14 +3,14 @@ import { getProjectActivity } from '../controllers/activity.controller.js';
 import { validate } from '../middlewares/validate.js';
 import {
   listPaginationQuerySchema,
-  projectIdParamSchema,
+  projectIdParamsSchema,
 } from '../validators/notification.validator.js';
 
 const router = Router({ mergeParams: true });
 
 router.get(
   '/',
-  validate(projectIdParamSchema.merge(listPaginationQuerySchema)),
+  validate({ params: projectIdParamsSchema, query: listPaginationQuerySchema }),
   getProjectActivity
 );
 
