@@ -5,7 +5,8 @@ import partnerRoutes from './partner.routes.js';
 import assignmentRoutes from './assignment.routes.js';
 import budgetRoutes from './budget.routes.js';
 import documentRoutes from './document.routes.js';
-// import notificationRoutes from './notification.routes.js';
+import notificationRoutes from './notification.routes.js';
+import activityRoutes from './activity.routes.js';
 
 const router = Router();
 
@@ -35,7 +36,8 @@ router.get('/health', (req, res) => {
 router.use('/admin/partners', partnerRoutes);
 router.use('/projects/:projectId/partners', assignmentRoutes);
 router.use('/projects/:projectId/documents', documentRoutes);
+router.use('/projects/:projectId/activity', activityRoutes);
 router.use('/projects/:projectId', budgetRoutes);
-// router.use('/notifications', notificationRoutes);
+router.use('/notifications', notificationRoutes);
 
 export default router;

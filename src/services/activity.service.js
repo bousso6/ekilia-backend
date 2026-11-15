@@ -1,24 +1,20 @@
-import { logger } from '../utils/logger.js';
+import { ActivityLog } from '../models/ActivityLog.js';
 
-/**
- * Signature figée (la partie A l'appelle déjà) :
- * logActivity({ project, actor, action, before, after })
- * Version provisoire : écrit dans les logs. L'étape B4 l'enregistrera en base.
- * Ne doit jamais bloquer ni faire échouer l'appelant.
- */
-export async function logActivity({ project, actor, action, before = null, after = null }) {
+export async function logActivity({ project, actor, action, before = undefined, after = undefined }) {
   try {
-    logger.debug(
-      {
-        project: project ? String(project) : null,
-        actor: actor ? String(actor) : null,
-        action,
-        before,
-        after,
-      },
-      'Activité (provisoire, B4 l’enregistrera en base)'
-    );
+    if (!project || !action) {
+      return null;
+    }
+
+    return await ActivityLog.create({
+      project,
+      actor: actor || undefined,
+      action,
+      before,
+      after,
+    });
   } catch (err) {
-    // volontairement ignoré
+    console.error('[activity.service] Échec logActivity:', err?.message || err);
+    return null;
   }
 }
