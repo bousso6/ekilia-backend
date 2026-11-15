@@ -191,18 +191,21 @@ export const registerUser = async ({
 };
 
 export const verifyEmail = async (token) => {
-  const user = await User.findOne({
-    emailVerificationTokenHash: hashToken(token),
-    emailVerificationExpires: { $gt: new Date() },
-  }).select('+emailVerificationTokenHash +emailVerificationExpires');
+  const user = await User.findOneAndUpdate(
+    {
+      emailVerificationTokenHash: hashToken(token),
+      emailVerificationExpires: { $gt: new Date() },
+      isEmailVerified: false,
+    },
+    {
+      $set: { isEmailVerified: true },
+      $unset: { emailVerificationTokenHash: 1, emailVerificationExpires: 1 },
+    },
+    { new: true }
+  );
 
   if (!user) {
     throw ApiError.badRequest('Lien de vérification invalide ou expiré');
-  }
-
-  if (!user.isEmailVerified) {
-    user.isEmailVerified = true;
-    await user.save();
   }
 
   return user.toJSON();
