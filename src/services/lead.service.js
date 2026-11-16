@@ -56,12 +56,17 @@ const notifyLeadCreated = async (lead) => {
     )
   );
 
-  await notify({
-    user: lead.client ?? lead.email,
-    type: 'diagnostic_recu',
-    message: `Merci ${lead.firstName}, votre diagnostic a bien été reçu. Un conseiller Elikia vous contactera prochainement.`,
-    link: null,
-  });
+  // Notification de confirmation : uniquement si le lead correspond déjà à un
+  // compte client. Un visiteur sans compte n'a pas d'identifiant utilisateur
+  // (Notification.user est un ObjectId), on ne lui passe donc pas son e-mail.
+  if (lead.client) {
+    await notify({
+      user: lead.client,
+      type: 'diagnostic_recu',
+      message: `Merci ${lead.firstName}, votre diagnostic a bien été reçu. Un conseiller Elikia vous contactera prochainement.`,
+      link: null,
+    });
+  }
 };
 
 export const getDiagnosticForm = async () => {
