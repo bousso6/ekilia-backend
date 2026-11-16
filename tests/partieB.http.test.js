@@ -1,11 +1,10 @@
 import { describe, it, expect, jest, afterEach } from '@jest/globals';
 import express from 'express';
 import request from 'supertest';
-import app from '../src/app.js';
-import routes from '../src/routes/index.js';
 import { errorHandler } from '../src/middlewares/errorHandler.js';
 import { notFound } from '../src/middlewares/notFound.js';
 import { Budget, Expense, PartnerAssignment, Project, User } from '../src/models/index.js';
+import { ApiError } from '../src/utils/ApiError.js';
 import { ROLES } from '../src/utils/constants.js';
 
 const CLIENT_A = '507f1f77bcf86cd799439011';
@@ -17,7 +16,29 @@ const PROJECT_A = '507f1f77bcf86cd799439021';
 const PROJECT_B = '507f1f77bcf86cd799439022';
 const DOC_ID = '507f1f77bcf86cd799439031';
 
-// App de test injectant req.user via le header x-test-user (en attendant les middlewares auth de la partie A)
+// Les routeurs de la partie A (admin, projects) appliquent le vrai middleware JWT.
+// Dans ce fichier, on le remplace par un faux qui lit le header x-test-user,
+// pour tester les règles d'accès de la partie B sans fabriquer de tokens.
+// Il doit être déclaré AVANT l'import de app.js et de routes/index.js.
+const fakeAuth = (req, _res, next) => {
+  const header = req.header('x-test-user');
+  if (!header) {
+    return next(ApiError.unauthorized("Jeton d'authentification manquant"));
+  }
+  req.user = JSON.parse(header);
+  return next();
+};
+
+jest.unstable_mockModule('../src/middlewares/auth.js', () => ({
+  auth: fakeAuth,
+  default: fakeAuth,
+}));
+
+const { default: app } = await import('../src/app.js');
+const { default: routes } = await import('../src/routes/index.js');
+
+// App de test injectant req.user via le header x-test-user
+// (couvre aussi les routes qui n'ont pas encore de middleware auth, ex. /notifications)
 const testApp = express();
 testApp.use(express.json());
 testApp.use((req, _res, next) => {

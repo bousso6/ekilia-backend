@@ -4,6 +4,7 @@ import {
   markAllNotificationsAsRead,
   markNotificationAsRead,
 } from '../controllers/notification.controller.js';
+import { auth } from '../middlewares/auth.js';
 import { validate } from '../middlewares/validate.js';
 import {
   listPaginationQuerySchema,
@@ -11,6 +12,9 @@ import {
 } from '../validators/notification.validator.js';
 
 const router = Router();
+
+// Les notifications sont personnelles : il faut être connecté.
+router.use(auth);
 
 router.get('/', validate({ query: listPaginationQuerySchema }), getMyNotifications);
 router.patch('/read-all', markAllNotificationsAsRead);
