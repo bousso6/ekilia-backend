@@ -21,7 +21,7 @@ const envSchema = z.object({
   SMTP_USER: z.string().optional(),
   SMTP_PASS: z.string().optional(),
   BREVO_API_KEY: z.string().optional(),
-  MAIL_FROM: z.string().default('Elikia <no-reply@elikia.com>'),
+  MAIL_FROM: z.string().default('Elikia Diaspora <no-reply@elikia-diaspora.sn>'),
 });
 
 const parsed = envSchema.safeParse(process.env);
