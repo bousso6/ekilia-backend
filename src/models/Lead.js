@@ -34,6 +34,15 @@ const consentSchema = new mongoose.Schema(
   { _id: false }
 );
 
+const statusHistorySchema = new mongoose.Schema(
+  {
+    status: { type: String, enum: LEAD_STATUS, required: true },
+    changedAt: { type: Date, default: Date.now },
+    changedBy: { type: mongoose.Schema.Types.ObjectId, ref: 'User' },
+  },
+  { _id: false }
+);
+
 const leadSchema = new mongoose.Schema(
   {
     firstName: { type: String, required: true, trim: true },
@@ -64,6 +73,7 @@ const leadSchema = new mongoose.Schema(
     source: { type: String, enum: LEAD_SOURCES, default: 'diagnostic' },
     score: { type: Number, min: 0, max: 100, default: 0 },
     status: { type: String, enum: LEAD_STATUS, default: 'nouveau', index: true },
+    statusHistory: { type: [statusHistorySchema], default: [] },
     notes: { type: String, trim: true, maxlength: 2000 },
 
     client: { type: mongoose.Schema.Types.ObjectId, ref: 'User', index: true },

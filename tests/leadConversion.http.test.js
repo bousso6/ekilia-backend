@@ -64,6 +64,7 @@ describe('Leads et conversion (HTTP)', () => {
       expect(response.body.success).toBe(true);
       expect(response.body.data.lead.status).toBe('nouveau');
       expect(response.body.data.lead.score).toBeGreaterThan(0);
+      expect(response.body.data.lead.statusHistory).toHaveLength(1);
 
       lead = await Lead.findById(response.body.data.lead._id);
       expect(lead.consent.accepted).toBe(true);
@@ -110,6 +111,11 @@ describe('Leads et conversion (HTTP)', () => {
         .send(validLeadPayload(email));
       const leadId = created.body.data.lead._id;
 
+      await agent()
+        .patch(`/api/v1/admin/leads/${leadId}`)
+        .set(auth(adminToken))
+        .send({ status: 'proposition_envoyee' });
+
       const response = await agent()
         .post(`/api/v1/admin/leads/${leadId}/convert`)
         .set(auth(adminToken));
@@ -119,11 +125,17 @@ describe('Leads et conversion (HTTP)', () => {
 
       const { lead: updatedLead, client, project } = response.body.data;
       expect(updatedLead.status).toBe('converti');
+      expect(updatedLead.statusHistory.map(({ status }) => status)).toEqual([
+        'nouveau',
+        'proposition_envoyee',
+        'converti',
+      ]);
       expect(updatedLead.convertedTo.project).toBe(project._id);
       expect(project.client).toBe(client._id);
       expect(project.sourceLead).toBe(leadId);
       expect(project.title).toBe('Achat appartement Almadies');
       expect(project.location).toBe('Almadies, Dakar');
+      expect(project.status).toBe('actif');
 
       const clientUser = await User.findById(client._id).select('+password');
       expect(clientUser.role).toBe('client');
@@ -141,6 +153,11 @@ describe('Leads et conversion (HTTP)', () => {
       const leadId = created.body.data.lead._id;
 
       await agent()
+        .patch(`/api/v1/admin/leads/${leadId}`)
+        .set(auth(adminToken))
+        .send({ status: 'proposition_envoyee' });
+
+      await agent()
         .post(`/api/v1/admin/leads/${leadId}/convert`)
         .set(auth(adminToken));
 
@@ -150,6 +167,18 @@ describe('Leads et conversion (HTTP)', () => {
 
       expect(second.status).toBe(409);
       expect(second.body.success).toBe(false);
+    });
+
+    test('refuse de convertir une demande avant envoi de la proposition', async () => {
+      const created = await agent()
+        .post('/api/v1/leads')
+        .send(validLeadPayload(`not-ready-${Date.now()}@elikia.test`));
+      const response = await agent()
+        .post(`/api/v1/admin/leads/${created.body.data.lead._id}/convert`)
+        .set(auth(adminToken));
+
+      expect(response.status).toBe(409);
+      expect(response.body.message).toMatch(/proposition doit être envoyée/i);
     });
 
     test('interdit la conversion à un client', async () => {

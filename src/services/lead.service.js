@@ -104,6 +104,7 @@ export const createLead = async (payload) => {
     },
     score: calculateLeadScore(payload),
     status: 'nouveau',
+    statusHistory: [{ status: 'nouveau' }],
     client: existingClient?.role === ROLES.CLIENT ? existingClient._id : undefined,
   });
 
@@ -174,7 +175,7 @@ export const getLeadById = async (id) => {
   return lead.toJSON();
 };
 
-export const updateLead = async (id, payload) => {
+export const updateLead = async (id, payload, actorId) => {
   const lead = await Lead.findById(id);
   if (!lead) {
     throw ApiError.notFound('Lead introuvable');
@@ -186,7 +187,10 @@ export const updateLead = async (id, payload) => {
     );
   }
 
-  if (payload.status !== undefined) lead.status = payload.status;
+  if (payload.status !== undefined && payload.status !== lead.status) {
+    lead.status = payload.status;
+    lead.statusHistory.push({ status: payload.status, changedBy: actorId });
+  }
   if (payload.notes !== undefined) lead.notes = payload.notes;
   if (payload.assignedTo !== undefined) lead.assignedTo = payload.assignedTo;
 
@@ -239,6 +243,11 @@ export const convertLead = async (id, actorId) => {
   if (lead.status === 'converti' || lead.convertedTo?.project) {
     throw ApiError.conflict('Ce lead a déjà été converti');
   }
+  if (lead.status !== 'proposition_envoyee') {
+    throw ApiError.conflict(
+      'La proposition doit être envoyée avant de valider la demande et créer le projet'
+    );
+  }
 
   const previousStatus = lead.status;
   const { client, created } = await findOrCreateClient(lead);
@@ -253,7 +262,7 @@ export const convertLead = async (id, actorId) => {
       client: client._id,
       advisor: lead.assignedTo || undefined,
       category: lead.projectCategory,
-      status: 'brouillon',
+      status: 'actif',
       priority: 'normale',
       location: lead.projectLocation,
       sourceLead: lead._id,
@@ -270,6 +279,7 @@ export const convertLead = async (id, actorId) => {
   }
 
   lead.status = 'converti';
+  lead.statusHistory.push({ status: 'converti', changedBy: actorId });
   lead.client = client._id;
   lead.convertedTo = { client: client._id, project: project._id };
   lead.convertedAt = new Date();

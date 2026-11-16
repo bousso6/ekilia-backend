@@ -90,6 +90,28 @@ describe('Authentification (HTTP)', () => {
       expect(response.body.data.user.password).toBeUndefined();
     });
 
+    test.each([
+      ['admin', '/admin/dashboard'],
+      ['finance', '/finance/dashboard'],
+      ['advisor', '/advisor/dashboard'],
+    ])(
+      'indique le dashboard correspondant au rôle %s',
+      async (role, redirectTo) => {
+        const user = await createUser({
+          email: `${role}-${Date.now()}-${Math.random()}@elikia.test`,
+          role,
+        });
+
+        const response = await agent().post('/api/v1/auth/login').send({
+          email: user.email,
+          password: TEST_PASSWORD,
+        });
+
+        expect(response.status).toBe(200);
+        expect(response.body.data.redirectTo).toBe(redirectTo);
+      }
+    );
+
     test('renvoie le même message pour email inconnu et mauvais mot de passe', async () => {
       const unknown = await agent().post('/api/v1/auth/login').send({
         email: `inconnu-${Date.now()}@elikia.test`,
@@ -143,6 +165,42 @@ describe('Authentification (HTTP)', () => {
         .set('Authorization', `Bearer ${adminToken}`);
       expect(allowed.status).toBe(200);
       expect(allowed.body.success).toBe(true);
+    });
+  });
+
+  describe('GET /dashboard/finance et /dashboard/advisor', () => {
+    test.each([
+      ['finance', '/api/v1/dashboard/finance'],
+      ['advisor', '/api/v1/dashboard/advisor'],
+    ])('autorise le dashboard au rôle %s', async (role, dashboardPath) => {
+      const user = await createUser({ role });
+      const token = await loginAs(agent(), user.email);
+
+      const response = await agent()
+        .get(dashboardPath)
+        .set('Authorization', `Bearer ${token}`);
+
+      expect(response.status).toBe(200);
+      expect(response.body.success).toBe(true);
+      if (role === 'advisor') {
+        expect(response.body.data.projects).toEqual([]);
+      }
+    });
+
+    test('refuse à un client l’accès aux dashboards finance et conseiller', async () => {
+      const client = await createUser({ role: 'client' });
+      const token = await loginAs(agent(), client.email);
+
+      for (const dashboardPath of [
+        '/api/v1/dashboard/finance',
+        '/api/v1/dashboard/advisor',
+      ]) {
+        const response = await agent()
+          .get(dashboardPath)
+          .set('Authorization', `Bearer ${token}`);
+
+        expect(response.status).toBe(403);
+      }
     });
   });
 

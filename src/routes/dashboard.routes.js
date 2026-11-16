@@ -12,5 +12,15 @@ router.get(
   authorize(ROLES.CLIENT),
   dashboardController.getClientDashboard
 );
+router.get(
+  '/advisor',
+  authorize(ROLES.ADVISOR),
+  dashboardController.getAdvisorDashboard
+);
+router.get(
+  '/finance',
+  authorize(ROLES.FINANCE),
+  dashboardController.getFinanceDashboard
+);
 
 export default router;

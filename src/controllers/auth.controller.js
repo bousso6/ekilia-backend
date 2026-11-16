@@ -1,5 +1,12 @@
 import { asyncHandler } from '../utils/asyncHandler.js';
 import * as authService from '../services/auth.service.js';
+import { ROLES } from '../utils/constants.js';
+
+const DASHBOARD_PATHS = {
+  [ROLES.ADMIN]: '/admin/dashboard',
+  [ROLES.FINANCE]: '/finance/dashboard',
+  [ROLES.ADVISOR]: '/advisor/dashboard',
+};
 
 export const register = asyncHandler(async (req, res) => {
   const data = await authService.registerUser(req.body);
@@ -31,7 +38,13 @@ export const resendVerification = asyncHandler(async (req, res) => {
 
 export const login = asyncHandler(async (req, res) => {
   const data = await authService.loginUser(req.body);
-  res.status(200).json({ success: true, data });
+  res.status(200).json({
+    success: true,
+    data: {
+      ...data,
+      redirectTo: DASHBOARD_PATHS[data.user.role] ?? null,
+    },
+  });
 });
 
 export const refresh = asyncHandler(async (req, res) => {

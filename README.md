@@ -14,3 +14,24 @@ Les contrôleurs, services, modèles, validateurs et routes métier sont des poi
 ## Tests
 
 Lancer `npm test`.
+
+## Dashboards par rôle
+
+La réponse de `POST /api/v1/auth/login` inclut `data.redirectTo` pour les rôles
+`admin`, `finance` et `advisor` (`/admin/dashboard`, `/finance/dashboard` et
+`/advisor/dashboard`). L'application cliente doit naviguer vers cette adresse
+après avoir enregistré les jetons de connexion.
+
+Les données de dashboard sont disponibles via :
+
+- `GET /api/v1/admin/dashboard` (admin)
+- `GET /api/v1/dashboard/finance` (finance)
+- `GET /api/v1/dashboard/advisor` (conseiller)
+
+## Validation des demandes de projet
+
+Dans le back-office, l'administrateur suit les étapes d'une demande : nouvelle,
+qualifiée, rendez-vous réalisé, puis proposition envoyée. Seule une demande au
+statut `proposition_envoyee` peut être convertie par
+`POST /api/v1/admin/leads/:id/convert`. La conversion crée le compte client et
+un projet actif, visible dans son espace, et conserve l'historique des statuts.

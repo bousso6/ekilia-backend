@@ -5,6 +5,7 @@ import dashboardRoutes from './dashboard.routes.js';
 import leadRoutes from './lead.routes.js';
 import projectRoutes from './project.routes.js';
 import notificationRoutes from './notification.routes.js';
+import meRoutes from './me.routes.js';
 
 const router = Router();
 
@@ -19,6 +20,7 @@ router.get('/health', (req, res) => {
 router.use('/auth', authRoutes);
 router.use('/admin', adminRoutes);
 router.use(leadRoutes);
+router.use('/me', meRoutes);
 router.use('/projects', projectRoutes);
 router.use('/dashboard', dashboardRoutes);
 

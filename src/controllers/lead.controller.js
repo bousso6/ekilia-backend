@@ -26,7 +26,7 @@ export const getLead = asyncHandler(async (req, res) => {
 });
 
 export const updateLead = asyncHandler(async (req, res) => {
-  const lead = await leadService.updateLead(req.params.id, req.body);
+  const lead = await leadService.updateLead(req.params.id, req.body, req.user._id);
   res.status(200).json({
     success: true,
     message: 'Lead mis à jour avec succès',

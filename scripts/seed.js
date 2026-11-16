@@ -1,3 +1,4 @@
+import '../src/config/dns.js';
 import mongoose from 'mongoose';
 import { connectDB, disconnectDB } from '../src/config/db.js';
 import { env } from '../src/config/env.js';
