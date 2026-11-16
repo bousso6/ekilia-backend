@@ -1,3 +1,4 @@
+import { randomUUID } from 'node:crypto';
 import mongoose from 'mongoose';
 import { env } from '../../src/config/env.js';
 import { User } from '../../src/models/User.js';
@@ -63,7 +64,9 @@ export const createUser = (overrides = {}) => {
   return User.create({
     firstName: 'Test',
     lastName: `User${userCounter}`,
-    email: `test-user-${Date.now()}-${userCounter}@elikia.test`,
+    // UUID : plusieurs suites Jest tournent en parallèle sur la même base,
+    // Date.now() + compteur peuvent donc entrer en collision entre processus.
+    email: `test-user-${randomUUID()}@elikia.test`,
     password: TEST_PASSWORD,
     role: 'client',
     isEmailVerified: true,

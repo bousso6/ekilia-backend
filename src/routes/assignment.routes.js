@@ -1,5 +1,7 @@
 import { Router } from 'express';
+import { authorize } from '../middlewares/authorize.js';
 import { validate } from '../middlewares/validate.js';
+import { ROLES } from '../utils/constants.js';
 import {
   projectParamsSchema,
   assignmentParamsSchema,
@@ -12,21 +14,22 @@ import {
   updateAssignment,
 } from '../controllers/assignment.controller.js';
 
+// Monté sur /projects/:projectId/partners par project.routes.js, derrière auth.
 // mergeParams : indispensable pour lire req.params.projectId
 const router = Router({ mergeParams: true });
 
-// TODO(auth) : quand la partie A aura poussé, ajouter ici protect et
-// projectAccess sur toutes les routes, et authorize('admin', 'advisor')
-// sur POST et PATCH.
+const WRITE_ROLES = [ROLES.ADMIN, ROLES.ADVISOR];
 
 router.get('/', validate({ params: projectParamsSchema }), listAssignments);
 router.post(
   '/',
+  authorize(WRITE_ROLES),
   validate({ params: projectParamsSchema, body: assignPartnerSchema }),
   createAssignment
 );
 router.patch(
   '/:assignmentId',
+  authorize(WRITE_ROLES),
   validate({ params: assignmentParamsSchema, body: updateAssignmentSchema }),
   updateAssignment
 );

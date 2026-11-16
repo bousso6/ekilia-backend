@@ -1,5 +1,7 @@
 import { Router } from 'express';
+import { authorize } from '../middlewares/authorize.js';
 import { validate } from '../middlewares/validate.js';
+import { ROLES } from '../utils/constants.js';
 import {
   projectParamsSchema,
   expenseParamsSchema,
@@ -16,16 +18,16 @@ import {
   deleteExpense,
 } from '../controllers/expense.controller.js';
 
-// Monté sur /projects/:projectId ; mergeParams pour lire req.params.projectId
+// Monté sur /projects/:projectId par project.routes.js, derrière auth.
+// mergeParams pour lire req.params.projectId
 const router = Router({ mergeParams: true });
 
-// TODO(auth) : quand la partie A aura poussé, ajouter protect et projectAccess
-// sur toutes les routes, et authorize('admin', 'advisor', 'finance') sur les
-// routes d'écriture (PUT, POST, PATCH, DELETE).
+const WRITE_ROLES = [ROLES.ADMIN, ROLES.ADVISOR, ROLES.FINANCE];
 
 router.get('/budget', validate({ params: projectParamsSchema }), getBudget);
 router.put(
   '/budget',
+  authorize(WRITE_ROLES),
   validate({ params: projectParamsSchema, body: upsertBudgetSchema }),
   upsertBudget
 );
@@ -37,16 +39,19 @@ router.get(
 );
 router.post(
   '/expenses',
+  authorize(WRITE_ROLES),
   validate({ params: projectParamsSchema, body: createExpenseSchema }),
   createExpense
 );
 router.patch(
   '/expenses/:expenseId',
+  authorize(WRITE_ROLES),
   validate({ params: expenseParamsSchema, body: updateExpenseSchema }),
   updateExpense
 );
 router.delete(
   '/expenses/:expenseId',
+  authorize(WRITE_ROLES),
   validate({ params: expenseParamsSchema }),
   deleteExpense
 );

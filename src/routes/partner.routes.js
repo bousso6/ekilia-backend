@@ -15,9 +15,8 @@ import {
 
 const router = Router();
 
-// TODO(auth) : quand la partie A aura poussé, ajouter ici
-// protect et authorize('admin', 'advisor') (les contrôleurs refusent déjà
-// tout accès sans utilisateur authentifié).
+// Monté sur /admin/partners par admin.routes.js : auth et
+// authorize(admin, advisor) sont appliqués par le routeur parent.
 
 router.get('/', validate({ query: listPartnersQuerySchema }), listPartners);
 router.post('/', validate({ body: createPartnerSchema }), createPartner);

@@ -18,6 +18,10 @@ import {
   updateTaskSchema,
   taskIdParamSchema,
 } from '../validators/task.validator.js';
+import assignmentRoutes from './assignment.routes.js';
+import documentRoutes from './document.routes.js';
+import activityRoutes from './activity.routes.js';
+import budgetRoutes from './budget.routes.js';
 
 const router = Router();
 
@@ -89,12 +93,12 @@ router.delete(
   taskController.deleteTask
 );
 
-// Routeurs de la partie B (montés par B)
-// import documentRoutes from './document.routes.js';
-// import budgetRoutes from './budget.routes.js';
-// import assignmentRoutes from './assignment.routes.js';
-// router.use('/:projectId/documents', projectAccess, documentRoutes);
-// router.use('/:projectId/budget', projectAccess, budgetRoutes);
-// router.use('/:projectId/partners', projectAccess, assignmentRoutes);
+// Partie B : routeurs montés derrière auth (ci-dessus). Le contrôle d'accès
+// au projet (client = son projet, conseiller = ses projets) est fait dans les
+// contrôleurs via loadAccessibleProject (utils/guards.js).
+router.use('/:projectId/partners', assignmentRoutes);
+router.use('/:projectId/documents', documentRoutes);
+router.use('/:projectId/activity', activityRoutes);
+router.use('/:projectId', budgetRoutes);
 
 export default router;

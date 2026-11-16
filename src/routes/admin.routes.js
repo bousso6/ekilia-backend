@@ -12,6 +12,8 @@ import {
 import * as adminController from '../controllers/admin.controller.js';
 import * as dashboardController from '../controllers/dashboard.controller.js';
 import { adminLeadRouter } from './lead.routes.js';
+import partnerRoutes from './partner.routes.js';
+import reportRoutes from './report.routes.js';
 
 const router = Router();
 
@@ -47,5 +49,9 @@ router.patch(
 );
 
 router.use('/leads', authorize(ROLES.ADMIN, ROLES.ADVISOR), adminLeadRouter);
+
+// Partie B
+router.use('/partners', authorize(ROLES.ADMIN, ROLES.ADVISOR), partnerRoutes);
+router.use('/reports', reportRoutes);
 
 export default router;

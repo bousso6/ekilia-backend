@@ -4,15 +4,7 @@ import adminRoutes from './admin.routes.js';
 import dashboardRoutes from './dashboard.routes.js';
 import leadRoutes from './lead.routes.js';
 import projectRoutes from './project.routes.js';
-
-// Partie B
-import partnerRoutes from './partner.routes.js';
-import assignmentRoutes from './assignment.routes.js';
-import budgetRoutes from './budget.routes.js';
-import documentRoutes from './document.routes.js';
 import notificationRoutes from './notification.routes.js';
-import activityRoutes from './activity.routes.js';
-import reportRoutes from './report.routes.js';
 
 const router = Router();
 
@@ -24,22 +16,17 @@ router.get('/health', (req, res) => {
   });
 });
 
-// Partie A
 router.use('/auth', authRoutes);
 router.use('/admin', adminRoutes);
 router.use(leadRoutes);
 router.use('/projects', projectRoutes);
 router.use('/dashboard', dashboardRoutes);
 
-// Partie B
-// Montage provisoire : à déplacer dans le bloc « Routeurs de la partie B »
-// de project.routes.js quand la partie A l'aura poussé.
-router.use('/admin/partners', partnerRoutes);
-router.use('/admin/reports', reportRoutes);
-router.use('/projects/:projectId/partners', assignmentRoutes);
-router.use('/projects/:projectId/documents', documentRoutes);
-router.use('/projects/:projectId/activity', activityRoutes);
-router.use('/projects/:projectId', budgetRoutes);
+// Les routeurs de la partie B sont montés dans admin.routes.js
+// (/admin/partners, /admin/reports) et project.routes.js
+// (/projects/:projectId/partners|documents|activity|budget|expenses),
+// derrière le middleware auth de ces deux routeurs.
+// /notifications n'a pas de parent : auth est appliqué dans notification.routes.js.
 router.use('/notifications', notificationRoutes);
 
 export default router;

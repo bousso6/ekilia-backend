@@ -1,7 +1,9 @@
 import { Router } from 'express';
 import { ApiError } from '../utils/ApiError.js';
+import { authorize } from '../middlewares/authorize.js';
 import { validate } from '../middlewares/validate.js';
 import { uploadSingle } from '../middlewares/upload.js';
+import { ROLES } from '../utils/constants.js';
 import {
   projectParamsSchema,
   documentParamsSchema,
@@ -17,13 +19,14 @@ import {
   updateDocumentStatus,
 } from '../controllers/document.controller.js';
 
-// Monté sur /projects/:projectId/documents ; mergeParams pour lire projectId
+// Monté sur /projects/:projectId/documents par project.routes.js, derrière auth.
+// mergeParams pour lire projectId
 const router = Router({ mergeParams: true });
 
-// TODO(auth) : quand la partie A aura poussé, ajouter protect et projectAccess
-// sur toutes les routes, et authorize('admin', 'advisor') sur /request et /status.
+const STAFF_WRITE_ROLES = [ROLES.ADMIN, ROLES.ADVISOR];
 
-// Sans utilisateur authentifié, on refuse AVANT de lire le fichier envoyé.
+// Garde de sécurité en plus de auth : sans utilisateur authentifié, on refuse
+// AVANT de lire le fichier envoyé (multer).
 const authenticated = (req, res, next) =>
   req.user ? next() : next(ApiError.unauthorized());
 
@@ -35,10 +38,13 @@ router.get(
 
 router.post(
   '/request',
+  authorize(STAFF_WRITE_ROLES),
   validate({ params: projectParamsSchema, body: requestDocumentSchema }),
   requestDocument
 );
 
+// Le dépôt d'un fichier est ouvert au client du projet : pas d'authorize ici,
+// l'appartenance au projet est vérifiée dans le contrôleur.
 router.post(
   '/:docId/upload',
   validate({ params: documentParamsSchema }),
@@ -55,6 +61,7 @@ router.get(
 
 router.patch(
   '/:docId/status',
+  authorize(STAFF_WRITE_ROLES),
   validate({ params: documentParamsSchema, body: updateDocumentStatusSchema }),
   updateDocumentStatus
 );
