@@ -1,10 +1,14 @@
+import mongoose from 'mongoose';
 import { connectDB, disconnectDB } from '../src/config/db.js';
 import { env } from '../src/config/env.js';
 import { User } from '../src/models/User.js';
 import { Project } from '../src/models/Project.js';
 import { ROLES } from '../src/utils/constants.js';
 
-const SEED_PASSWORD = process.env.SEED_PASSWORD || 'Elikia@2026!';
+// Le seed ne peut écrire que dans cette base de développement.
+const ALLOWED_DB_NAME = 'elikia_dev';
+
+const SEED_PASSWORD = process.env.SEED_PASSWORD;
 
 const SEED_USERS = [
   {
@@ -120,17 +124,50 @@ const resetSeedData = async () => {
   log(`  - ${removed.deletedCount} utilisateur(s) supprimé(s)`);
 };
 
+const fail = (message) => {
+  console.error(message);
+  process.exit(1);
+};
+
 const run = async () => {
   if (env.NODE_ENV === 'production') {
-    console.error('Le seed est interdit en production.');
-    process.exit(1);
+    fail('Le seed est interdit en production.');
+  }
+
+  if (!SEED_PASSWORD || SEED_PASSWORD.length < 12) {
+    fail(
+      'SEED_PASSWORD est requis (12 caractères minimum). ' +
+        "Exemple : SEED_PASSWORD='un-mot-de-passe-long' npm run seed"
+    );
   }
 
   const shouldReset = process.argv.includes('--reset');
+  const resetConfirmed = process.argv.includes('--confirm-reset');
+
+  if (shouldReset && !resetConfirmed) {
+    fail('--reset supprime les comptes de seed : ajoutez --confirm-reset pour confirmer.');
+  }
 
   await connectDB();
 
   try {
+    const dbName = mongoose.connection.name;
+    log(`Base ciblée : ${dbName}`);
+
+    // Garde-fou : on n'écrit jamais ailleurs que dans la base de développement.
+    if (dbName !== ALLOWED_DB_NAME) {
+      console.error(
+        `Refus : le seed ne peut écrire que dans la base "${ALLOWED_DB_NAME}" ` +
+          `(base ciblée : "${dbName}").`
+      );
+      console.error(
+        `Dans votre .env local, terminez MONGODB_URI par /${ALLOWED_DB_NAME} ` +
+          '(avant le "?") puis relancez.'
+      );
+      process.exitCode = 1;
+      return;
+    }
+
     if (shouldReset) {
       log('\nSuppression des données de seed...');
       await resetSeedData();
@@ -146,8 +183,8 @@ const run = async () => {
     await seedDemoProject(created[ROLES.CLIENT], created[ROLES.ADVISOR]);
 
     log('\nSeed terminé.');
-    log(`Mot de passe des comptes de test : ${SEED_PASSWORD}`);
-    log('Comptes : admin@, conseiller@, finance@, client@ (domaine elikia.test)\n');
+    log('Comptes : admin@, conseiller@, finance@, client@ (domaine elikia.test)');
+    log('Mot de passe : la valeur de SEED_PASSWORD que vous avez fournie.\n');
   } catch (error) {
     console.error('Erreur pendant le seed :', error);
     process.exitCode = 1;
