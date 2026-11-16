@@ -23,20 +23,38 @@ export const getTestDatabaseUri = () => {
   return `${match[1]}/${TEST_DB_NAME}${match[2] ?? ''}`;
 };
 
-export const connectTestDb = async () => {
-  await mongoose.connect(getTestDatabaseUri());
-};
+// true si une base de test est utilisable (MONGODB_URI_TEST ou MONGODB_URI)
+export const hasTestDb = Boolean(
+  process.env.MONGODB_URI_TEST || env.MONGODB_URI
+);
 
-export const disconnectTestDb = async () => {
-  await mongoose.disconnect();
-};
+export async function connectTestDb() {
+  const uri = getTestDatabaseUri();
 
-export const resetTestDb = async () => {
-  const collections = await mongoose.connection.db.collections();
-  await Promise.all(
-    collections.map((collection) => collection.deleteMany({}))
-  );
-};
+  if (!uri.includes(TEST_DB_NAME)) {
+    throw new Error(
+      `Sécurité tests : l'URI de test doit pointer vers la base ${TEST_DB_NAME}`
+    );
+  }
+
+  await mongoose.connect(uri);
+  return true;
+}
+
+export async function clearTestDb() {
+  if (mongoose.connection.readyState !== 1) return;
+  const collections = Object.values(mongoose.connection.collections);
+  await Promise.all(collections.map((col) => col.deleteMany({})));
+}
+
+// Alias conservé pour les tests existants
+export const resetTestDb = clearTestDb;
+
+export async function disconnectTestDb() {
+  if (mongoose.connection.readyState !== 0) {
+    await mongoose.disconnect();
+  }
+}
 
 let userCounter = 0;
 
