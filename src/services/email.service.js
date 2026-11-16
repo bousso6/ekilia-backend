@@ -2,6 +2,17 @@ import { env } from '../config/env.js';
 import { getTransporter } from '../config/mailer.js';
 import { buildNotificationEmail } from '../utils/emailTemplates.js';
 
+// Les services passent des liens relatifs (/admin/leads/..., /projects/...).
+// Dans un e-mail, il faut une URL complète : on préfixe avec CLIENT_URL.
+const toAbsoluteLink = (link) => {
+  if (!link) return link;
+  if (/^https?:\/\//i.test(link)) return link;
+
+  const base = String(env.CLIENT_URL || '').replace(/\/+$/, '');
+  const path = link.startsWith('/') ? link : `/${link}`;
+  return `${base}${path}`;
+};
+
 export async function sendNotificationEmail({ to, recipientName, type, message, link }) {
   if (!to) {
     return { status: 'skipped' };
@@ -10,7 +21,7 @@ export async function sendNotificationEmail({ to, recipientName, type, message, 
   const { subject, text, html } = buildNotificationEmail({
     type,
     message,
-    link,
+    link: toAbsoluteLink(link),
     recipientName,
   });
 
