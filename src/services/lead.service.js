@@ -8,6 +8,7 @@ import { ROLES, STAFF_ROLES } from '../utils/constants.js';
 import { DEFAULT_DIAGNOSTIC_FORM } from '../utils/diagnosticForm.js';
 import { logActivity, notify } from './events.js';
 import { sendPasswordResetLink } from './auth.service.js';
+import { sendNotificationEmail } from './email.service.js';
 
 const escapeRegex = (value) => value.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
 
@@ -56,16 +57,34 @@ const notifyLeadCreated = async (lead) => {
     )
   );
 
-  // Notification de confirmation : uniquement si le lead correspond déjà à un
-  // compte client. Un visiteur sans compte n'a pas d'identifiant utilisateur
-  // (Notification.user est un ObjectId), on ne lui passe donc pas son e-mail.
+  const confirmationMessage = `Merci ${lead.firstName}, votre diagnostic a bien été reçu. Un conseiller Elikia vous contactera prochainement.`;
+
   if (lead.client) {
+    // Le lead correspond à un compte client : notification in-app + e-mail via notify.
     await notify({
       user: lead.client,
       type: 'diagnostic_recu',
-      message: `Merci ${lead.firstName}, votre diagnostic a bien été reçu. Un conseiller Elikia vous contactera prochainement.`,
+      message: confirmationMessage,
       link: null,
     });
+    return;
+  }
+
+  // Visiteur sans compte : pas d'identifiant utilisateur (Notification.user est
+  // un ObjectId), donc seulement un e-mail de confirmation envoyé directement.
+  try {
+    await sendNotificationEmail({
+      to: lead.email,
+      recipientName: `${lead.firstName} ${lead.lastName}`.trim(),
+      type: 'diagnostic_recu',
+      message: confirmationMessage,
+      link: null,
+    });
+  } catch (err) {
+    console.error(
+      '[lead.service] Échec envoi e-mail de confirmation:',
+      err?.message || err
+    );
   }
 };
 

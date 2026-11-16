@@ -23,16 +23,24 @@ export async function notify({ user, type, message, link = undefined }) {
     });
 
     try {
-      const recipient = await User.findById(user).select('email name').lean();
+      // .lean() ne calcule pas le virtuel fullName : on lit prénom et nom.
+      const recipient = await User.findById(user)
+        .select('email firstName lastName')
+        .lean();
+
       if (!recipient?.email) {
         notification.emailStatus = 'skipped';
         await notification.save();
         return notification;
       }
 
+      const recipientName = [recipient.firstName, recipient.lastName]
+        .filter(Boolean)
+        .join(' ');
+
       const result = await sendNotificationEmail({
         to: recipient.email,
-        recipientName: recipient.name,
+        recipientName,
         type,
         message,
         link,
